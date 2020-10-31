@@ -52,7 +52,7 @@ ssl_context.check_hostname = False
 ssl_context.load_verify_locations(localhost_pem)
 
 async def connect():
-	uri = "wss://test:test@localhost:8765"
+	uri = "wss://test:test@localhost:11783"
 	async with websockets.connect(uri, ssl=ssl_context) as server:
 		global backend
 		backend = server
@@ -63,6 +63,8 @@ async def connect():
 			cmd = json.loads(data)
 			if "cfg" in cmd:
 				await config_store(server, cmd["cfg"])
+			if "error" in cmd:
+				print(f">Error {cmd['error']}")
 
 async def timer():
 	while True:
