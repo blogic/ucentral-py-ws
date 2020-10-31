@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-# WS server example
 
 import asyncio
 import websockets
 import json
+import pathlib
+import ssl
 
 connected = set()
 clients = {}
@@ -41,7 +42,7 @@ async def server(client, path):
 	try:
 		while True:
 			data = await client.recv()
-			print(data)
+			#print(data)
 			cmd = json.loads(data)
 			if "serial" in cmd and "uuid" in cmd:
 				global clients
@@ -57,12 +58,9 @@ async def server(client, path):
 				else:
 					print(f"{serial} has config {uuid}")
 	except Exception as e:
-		print(e)
-		print (f"error {client.remote_address[0]}")
 		connected.remove(client)
 
 	finally:
-		print (f"disconnect {client.remote_address[0]}")
 		if client in connected:
 			connected.remove(client)
 
@@ -71,6 +69,7 @@ async def timer():
 	while True:
 		for serial, client in list(clients.items()):
 			if client["client"] not in connected:
+				print(f"{serial} disconnected")
 				del clients[serial]
 				continue
 			try:
@@ -83,7 +82,11 @@ async def timer():
 				await client["client"].send(json.dumps({"cfg": client["config"]}))
 		await asyncio.sleep(5)
 
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain("cert.pem", "key.pem")
+
 start_server = websockets.serve(server, "localhost", 8765,
+	ssl=ssl_context,
 	create_protocol=websockets.basic_auth_protocol_factory(
 		realm="venue", credentials=("test", "test")
 	),

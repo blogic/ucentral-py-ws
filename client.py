@@ -3,6 +3,8 @@
 import asyncio
 import websockets
 import json
+import pathlib
+import ssl
 
 serial = "00:11:22:33:44:55"
 config = {"uuid": "0"}
@@ -43,9 +45,15 @@ async def config_store(server, data):
 	except:
 		await config_error(server, data["uuid"])
 
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+localhost_pem = pathlib.Path(__file__).with_name("cert.pem")
+ssl_context.verify_mode = ssl.CERT_REQUIRED
+ssl_context.check_hostname = False
+ssl_context.load_verify_locations(localhost_pem)
+
 async def connect():
-	uri = "ws://test:test@localhost:8765"
-	async with websockets.connect(uri) as server:
+	uri = "wss://test:test@localhost:8765"
+	async with websockets.connect(uri, ssl=ssl_context) as server:
 		global backend
 		backend = server
 		await config_heartbeat(server)
