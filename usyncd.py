@@ -51,6 +51,7 @@ async def server(client, path):
 				global clients
 				serial = cmd["serial"]
 				uuid = cmd["uuid"]
+				active = cmd["active"]
 				if serial not in clients:
 					await serial_load(client, cmd)
 				elif clients[serial]["uuid"] != uuid:
@@ -58,6 +59,8 @@ async def server(client, path):
 					print(f"{serial} received new config")
 				if "state" in cmd and "uuid" in cmd["state"]:
 					await state_store(serial, cmd["state"])
+				elif "active" in cmd:
+					print(f"{serial} has config {uuid} but is using {active}")
 				else:
 					print(f"{serial} has config {uuid}")
 	except Exception as e:
@@ -82,7 +85,7 @@ async def timer():
 				continue;
 			if client["uuid"] != client["config"]["uuid"]:
 				print(f"{serial} sending new config")
-				await client["client"].send(json.dumps({"cfg": client["config"]}))
+				await client["client"].send(json.dumps({"uuid": client["config"]["uuid"], "cfg": client["config"]}))
 		await asyncio.sleep(5)
 
 with open(f"usync.cfg") as json_file:
