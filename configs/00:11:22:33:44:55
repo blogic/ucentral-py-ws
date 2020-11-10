@@ -1,9 +1,8 @@
 {
- "uuid": 124,
+ "uuid": 152,
  "phy": [
   {
    "band": "2",
-   "name": "radio1",
    "cfg": {
     "disabled": 0,
     "country": "DE",
@@ -21,7 +20,6 @@
   },
   {
    "band": "5",
-   "name": "radio2",
    "cfg": {
     "disabled": 0,
     "country": "DE",

@@ -31,13 +31,20 @@ async def serial_load(client, cmd):
 
 async def state_store(serial, state):
 	try:
-		with open(f".{serial}.state", 'w') as outfile:
+		with open(f"{config['state_folder']}{serial}", 'w') as outfile:
 			json.dump(state, outfile)
-		clients[serial]["state"] = state
 		uuid = state["uuid"]
 		print(f"{serial} new state {uuid}")
 	except:
 		print(f"{serial} failed to store state")
+
+async def capab_store(serial, capab):
+	try:
+		with open(f"{config['capab_folder']}{serial}", 'w') as outfile:
+			json.dump(capab, outfile)
+		print(f"{serial} new capabilities")
+	except:
+		print(f"{serial} failed to store capabilities")
 
 async def server(client, path):
 	print (f"connect {client.remote_address[0]}")
@@ -51,19 +58,22 @@ async def server(client, path):
 				global clients
 				serial = cmd["serial"]
 				uuid = cmd["uuid"]
-				active = cmd["active"]
 				if serial not in clients:
 					await serial_load(client, cmd)
 				elif clients[serial]["uuid"] != uuid:
 					clients[serial]["uuid"] = uuid
 					print(f"{serial} received new config")
-				if "state" in cmd and "uuid" in cmd["state"]:
-					await state_store(serial, cmd["state"])
-				elif "active" in cmd:
+				if "active" in cmd:
+					active = cmd["active"]
 					print(f"{serial} has config {uuid} but is using {active}")
 				else:
 					print(f"{serial} has config {uuid}")
+			if "serial" in cmd and "capab" in cmd:
+				await capab_store(cmd["serial"], cmd["capab"])
+			if "state" in cmd and "uuid" in cmd["state"]:
+				await state_store(cmd["serial"], cmd["state"])
 	except Exception as e:
+		#print(e)
 		connected.remove(client)
 
 	finally:
