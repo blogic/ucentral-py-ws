@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import asyncio
 import websockets
@@ -70,7 +70,7 @@ async def server(client, path):
 					print(f"{serial} has config {uuid}")
 			if "serial" in cmd and "capab" in cmd:
 				await capab_store(cmd["serial"], cmd["capab"])
-			if "state" in cmd and "uuid" in cmd["state"]:
+			if "state" in cmd and "cfg_uuid" in cmd["state"]:
 				await state_store(cmd["serial"], cmd["state"])
 	except Exception as e:
 		#print(e)
@@ -95,7 +95,7 @@ async def timer():
 				continue;
 			if client["uuid"] != client["config"]["uuid"]:
 				print(f"{serial} sending new config")
-				await client["client"].send(json.dumps({"uuid": client["config"]["uuid"], "cfg": client["config"]}))
+				await client["client"].send(json.dumps({"cfg": client["config"]}))
 		await asyncio.sleep(5)
 
 with open(f"usync.cfg") as json_file:
@@ -111,7 +111,7 @@ ssl_context.load_cert_chain(config["ssl_cert"], config["ssl_key"])
 start_server = websockets.serve(server, config["bind"], config["port"],
 	ssl=ssl_context,
 	create_protocol=websockets.basic_auth_protocol_factory(
-		realm="venue", credentials=("test", "test")
+		realm="uSync", credentials=("test", "test")
 	),
 )
 asyncio.get_event_loop().run_until_complete(start_server)
