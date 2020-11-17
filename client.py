@@ -3,13 +3,15 @@
 import asyncio
 import websockets
 import json
-import pathlib
+from pathlib import Path
 import ssl
 
 serial = "00:11:22:33:44:55"
 config = {"uuid": "0"}
 state = {"uuid": "0", "cfg": 0 }
 backend = None
+uri = "wss://test:test@localhost:11783"
+#uri = "wss://test:test@websocket.usync.org:3000"
 
 async def config_heartbeat(server):
 	uuid = config["uuid"]
@@ -45,14 +47,17 @@ async def config_store(server, data):
 	except:
 		await config_error(server, data["uuid"])
 
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-localhost_pem = pathlib.Path(__file__).with_name("cert.pem")
-ssl_context.verify_mode = ssl.CERT_REQUIRED
-ssl_context.check_hostname = False
-ssl_context.load_verify_locations(localhost_pem)
+if Path("cert.pem").is_file():
+    print("Use local sefl-signed cert.pem")
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    localhost_pem = Path(__file__).with_name("cert.pem")
+    ssl_context.verify_mode = ssl.CERT_REQUIRED
+    ssl_context.check_hostname = False
+    ssl_context.load_verify_locations(localhost_pem)
+else:
+    ssl_context = True
 
 async def connect():
-	uri = "wss://test:test@localhost:11783"
 	async with websockets.connect(uri, ssl=ssl_context) as server:
 		global backend
 		backend = server

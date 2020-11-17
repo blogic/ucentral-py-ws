@@ -4,7 +4,6 @@ import asyncio
 import websockets
 import json
 import pathlib
-import ssl
 
 connected = set()
 clients = {}
@@ -100,13 +99,18 @@ async def timer():
 
 with open(f"usync.cfg") as json_file:
 	config = json.load(json_file)
-for k in { "ssl_key", "ssl_cert", "bind", "port", "config_folder" }:
+for k in { "bind", "port", "config_folder" }:
 	if k not in config:
 		print(f"{k} is missing from in the config file")
 		exit(-1)
 
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_context.load_cert_chain(config["ssl_cert"], config["ssl_key"])
+if "ssl_key" in config and "ssl_cert" in config:
+    import ssl
+
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ssl_context.load_cert_chain(config["ssl_cert"], config["ssl_key"])
+else:
+    ssl_context = None
 
 start_server = websockets.serve(server, config["bind"], config["port"],
 	ssl=ssl_context,
@@ -114,6 +118,7 @@ start_server = websockets.serve(server, config["bind"], config["port"],
 		realm="uSync", credentials=("test", "test")
 	),
 )
+print(f"Starting usyncd at {config['bind']}:{config['port']}")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_until_complete(timer())
 asyncio.get_event_loop().run_forever()
