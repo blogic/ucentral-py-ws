@@ -97,7 +97,7 @@ async def timer():
 				await client["client"].send(json.dumps({"cfg": client["config"]}))
 		await asyncio.sleep(5)
 
-with open(f"usync.cfg") as json_file:
+with open(f"ucentrald.cfg") as json_file:
 	config = json.load(json_file)
 for k in { "bind", "port", "config_folder" }:
 	if k not in config:
@@ -115,10 +115,10 @@ else:
 start_server = websockets.serve(server, config["bind"], config["port"],
 	ssl=ssl_context,
 	create_protocol=websockets.basic_auth_protocol_factory(
-		realm="uSync", credentials=("test", "test")
+		realm="uCentral", credentials=("test", "test")
 	),
 )
-print(f"Starting usyncd at {config['bind']}:{config['port']}")
+print(f"Starting ucentrald at {config['bind']}:{config['port']}")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_until_complete(timer())
 asyncio.get_event_loop().run_forever()
