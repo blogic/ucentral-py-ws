@@ -11,7 +11,7 @@ config = {"uuid": "0"}
 state = {"uuid": "0", "cfg": 0 }
 backend = None
 uri = "wss://test:test@localhost:11783"
-#uri = "wss://test:test@websocket.usync.org:3000"
+#uri = "wss://test:test@websocket.usync.org:11783"
 
 async def config_heartbeat(server):
 	uuid = config["uuid"]
