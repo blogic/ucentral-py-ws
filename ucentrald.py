@@ -3,7 +3,7 @@
 import asyncio
 import websockets
 import json
-import pathlib
+from pathlib import Path
 
 connected = set()
 clients = {}
@@ -103,6 +103,10 @@ for k in { "bind", "port", "config_folder" }:
 	if k not in config:
 		print(f"{k} is missing from in the config file")
 		exit(-1)
+
+for folder in [ "config_folder", "capab_folder", "state_folder" ]:
+	if not Path(config[folder]).is_dir():
+		Path(config[folder]).mkdir(parents=True, exists_ok=True)
 
 if "ssl_key" in config and "ssl_cert" in config:
     import ssl
